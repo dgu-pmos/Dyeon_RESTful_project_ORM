@@ -12,7 +12,7 @@ module.exports = {
         return result;
     },
 
-    maxPage : async (page) => {
+    maxPage : async () => {
         const result = await pool.queryParam_None(`
         SELECT COUNT(*) AS cnt FROM Board
         WHERE active = 1

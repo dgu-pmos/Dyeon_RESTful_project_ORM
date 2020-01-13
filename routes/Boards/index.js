@@ -91,7 +91,7 @@ router.get('/pages/:page', async (req, res) => {
     }
 
     let maxPage = await Board.maxPage();
-    maxPage[0].cnt = maxPage[0].cnt / 3;
+    maxPage[0].cnt = Math.ceil(maxPage[0].cnt / 3);
 
     // 최대 페이지 조회에 실패했다면
     if(!result){
