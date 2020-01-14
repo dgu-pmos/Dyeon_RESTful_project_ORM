@@ -10,10 +10,36 @@ const responseMessage = require('../../../module/utils/responseMessage');
 const statusCode = require('../../../module/utils/statusCode');
 const models = require('../../../models');
 
+// 댓글 전체 조회 라우트
+router.get('/', isLoggedIn, async (req, res) => {
+    const boardIdx = Number(req.params.boardIdx);
+    // miss parameter가 있는지 검사한다.
+    if(!boardIdx){
+        res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.X_NULL_VALUE('boardIdx')));
+        return;
+    }
+
+    // 댓글 조회 함수 호출
+    const result = await models.Comment.findAll({
+        where: {
+            boardIdx : boardIdx
+        }
+    }
+);
+    // 실패했다면
+    if(!result){
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.COMMENT_READ_FAIL));
+        return;
+    }
+
+    res.status(statusCode.OK).send(utils.successTrue(responseMessage.COMMENT_READ_SUCCESS, result));
+    return;
+});
+
 // 댓글 생성 라우트
-router.post('/', authUtil.validToken, async (req, res) => {
+router.post('/', isLoggedIn, async (req, res) => {
     const conditions = {};
-    const userIdx = req.decoded.userIdx;
+    const userIdx = req.user;
     const {content, ref_comment} = req.body;
     const boardIdx = Number(req.params.boardIdx);
     // miss parameter가 있는지 검사한다.
@@ -42,8 +68,8 @@ router.post('/', authUtil.validToken, async (req, res) => {
 });
 
 // 댓글 수정 라우트
-router.put('/:commentIdx', authUtil.validToken, async (req, res) => {
-    const userIdx = req.decoded.userIdx;
+router.put('/:commentIdx', isLoggedIn, async (req, res) => {
+    const userIdx = req.user;
     const content = req.body.content;
     const commentIdx = Number(req.params.commentIdx);
     // miss parameter가 있는지 검사한다.
@@ -73,35 +99,9 @@ router.put('/:commentIdx', authUtil.validToken, async (req, res) => {
     return;
 });
 
-// 댓글 전체 조회 라우트
-router.get('/', async (req, res) => {
-    const boardIdx = Number(req.params.boardIdx);
-    // miss parameter가 있는지 검사한다.
-    if(!boardIdx){
-        res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.X_NULL_VALUE('boardIdx')));
-        return;
-    }
-
-    // 댓글 조회 함수 호출
-    const result = await models.Comment.findAll({
-        where: {
-            boardIdx : boardIdx
-        }
-    }
-);
-    // 실패했다면
-    if(!result){
-        res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.COMMENT_READ_FAIL));
-        return;
-    }
-
-    res.status(statusCode.OK).send(utils.successTrue(responseMessage.COMMENT_READ_SUCCESS, result));
-    return;
-});
-
 // 댓글 삭제 라우트
-router.delete('/:commentIdx', authUtil.validToken, async (req, res) => {
-    const userIdx = req.decoded.userIdx;
+router.delete('/:commentIdx', isLoggedIn, async (req, res) => {
+    const userIdx = req.user;
     const commentIdx = Number(req.params.commentIdx);
     // miss parameter가 있는지 검사한다.
     if(!commentIdx || !userIdx){

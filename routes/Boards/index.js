@@ -62,7 +62,7 @@ router.get('/pages/:page', isLoggedIn, async (req, res) => {
 });
 
 // 상세 게시글 조회 라우트
-router.get('/:boardIdx', async (req, res) => {
+router.get('/:boardIdx', isLoggedIn, async (req, res) => {
     const boardIdx = Number(req.params.boardIdx);
     // miss parameter가 있는지 검사한다.
     if(!boardIdx){
@@ -88,9 +88,9 @@ router.get('/:boardIdx', async (req, res) => {
 });
 
 // 게시글 생성 라우트
-router.post('/', authUtil.validToken, async (req, res) => {
+router.post('/', isLoggedIn, async (req, res) => {
     // authUtil 미들웨어로부터 user_id 를 받는다.
-    const userIdx = req.decoded.userIdx;
+    const userIdx = req.user;
     // request body로부터 게시글 입력 정보들을 받는다.
     const {title, content} = req.body;
     const active = 1;
@@ -115,8 +115,8 @@ router.post('/', authUtil.validToken, async (req, res) => {
 });
 
 // 게시글 수정 라우트
-router.put('/:boardIdx', authUtil.validToken, async (req, res) => {
-    const userIdx = req.decoded.userIdx;
+router.put('/:boardIdx', isLoggedIn, async (req, res) => {
+    const userIdx = req.user;
     const {title, content, active} = req.body;
     const boardIdx = Number(req.params.boardIdx);
     const conditions = {};
@@ -147,8 +147,8 @@ router.put('/:boardIdx', authUtil.validToken, async (req, res) => {
     return;
 });
 
-router.delete('/:boardIdx', authUtil.validToken, async (req, res) => {
-    const userIdx = req.decoded.userIdx;
+router.delete('/:boardIdx', isLoggedIn, async (req, res) => {
+    const userIdx = req.user;
     const boardIdx = Number(req.params.boardIdx);
     // miss parameter가 있는지 검사한다.
     if(!boardIdx || !userIdx){

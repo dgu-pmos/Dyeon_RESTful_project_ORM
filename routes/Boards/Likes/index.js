@@ -13,9 +13,35 @@ const statusCode = require('../../../module/utils/statusCode');
 const models = require('../../../models');
 const sequelize = require('sequelize');
 
+// 좋아요 조회 라우트
+router.get('/', isLoggedIn, async (req, res) => {
+    const boardIdx = Number(req.params.boardIdx);
+    // miss parameter가 있는지 검사한다.
+    if(!boardIdx){
+        res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.X_NULL_VALUE('boardIdx')));
+        return;
+    }
+    // 좋아요 조회 함수 호출
+    const result = await models.Like.findAll({
+        attributes: [[sequelize.fn('COUNT', sequelize.col('boardIdx')), 'likeNum']],
+        where : {
+            boardIdx : boardIdx
+        }
+    });
+
+    // 실패했다면
+    if(!result){
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.LIKE_READ_FAIL));
+        return;
+    }
+
+    res.status(statusCode.OK).send(utils.successTrue(responseMessage.LIKE_READ_SUCCESS, result));
+    return;
+});
+
 // 좋아요 생성 라우트
-router.post('/', authUtil.validToken, async (req, res) => {
-    const userIdx = req.decoded.userIdx;
+router.post('/', isLoggedIn, async (req, res) => {
+    const userIdx = req.user;
     const boardIdx = Number(req.params.boardIdx);
     // miss parameter가 있는지 검사한다.
     if(!boardIdx || !userIdx){
@@ -49,35 +75,9 @@ router.post('/', authUtil.validToken, async (req, res) => {
     return;
 });
 
-// 좋아요 조회 라우트
-router.get('/', async (req, res) => {
-    const boardIdx = Number(req.params.boardIdx);
-    // miss parameter가 있는지 검사한다.
-    if(!boardIdx){
-        res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.X_NULL_VALUE('boardIdx')));
-        return;
-    }
-    // 좋아요 조회 함수 호출
-    const result = await models.Like.findAll({
-        attributes: [[sequelize.fn('COUNT', sequelize.col('boardIdx')), 'likeNum']],
-        where : {
-            boardIdx : boardIdx
-        }
-    });
-
-    // 실패했다면
-    if(!result){
-        res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.LIKE_READ_FAIL));
-        return;
-    }
-
-    res.status(statusCode.OK).send(utils.successTrue(responseMessage.LIKE_READ_SUCCESS, result));
-    return;
-});
-
 // 좋아요 삭제 라우트
-router.delete('/', authUtil.validToken, async (req, res) => {
-    const userIdx = req.decoded.userIdx;
+router.delete('/', isLoggedIn, async (req, res) => {
+    const userIdx = req.user;
     const boardIdx = Number(req.params.boardIdx);
     // miss parameter가 있는지 검사한다.
     if(!boardIdx || !userIdx){

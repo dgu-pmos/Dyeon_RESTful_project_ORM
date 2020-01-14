@@ -8,37 +8,45 @@ const { isLoggedIn, isNotLoggedIn } = require('../../module/passport/Log');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
 
-router.get('/kakao', (req, res) => {
-    res.render('kakao');
-})
-
-// passport.authenticate를 이용해 kakaoStrategy를 호출한다.
-router.get('/kakao/signin', isNotLoggedIn, passport.authenticate('kakao-login'));
-
-// 카카오 로그인을 끝내고 처리하는 콜백함수 라우트
-router.get('/kakao/signin/callback', isNotLoggedIn, passport.authenticate('kakao-login', {
-    successRedirect: '/success',
-    failureRedirect: '/fail'
-}));
-
+// 로그인 form을 보여주기 위한 route
 router.get('/local/signin', (req, res) => {
     res.render('login');
 })
 
+// 로그아웃 route
 router.get('/local/signout', isLoggedIn, (req, res) => {
     req.logout();
     req.session.destroy();
     res.redirect('/');
 });
 
+// 카카오 로그인 페이지 접속을 위한 route
+router.get('/kakao', (req, res) => {
+    res.render('kakao');
+})
+
+// passport.authenticate 메소드를 이용해 kakaoStrategy를 호출한다.
+// 세션이 존재하지 않는 상태인지 isNotLoggedIn으로 확인한다.
+router.get('/kakao/signin', isNotLoggedIn, passport.authenticate('kakao-login'));
+
+// 카카오 로그인을 끝내고 처리하는 콜백함수
+// 세션이 존재하지 않는 상태인지 isNotLoggedIn으로 확인한다.
+router.get('/kakao/signin/callback', isNotLoggedIn, passport.authenticate('kakao-login', {
+    successRedirect: '/success',
+    failureRedirect: '/fail'
+}));
+
+// local login route
 router.post('/local/signin', isNotLoggedIn, (req, res, next) => {
+    // local Strategy를 호출
     passport.authenticate('local', (authError, user, info) => {
         if(authError){
             return next(authError);
         }
         if(!user){
-            return res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.SIGN_IN_FAIL));
+            res.redirect('/fail');
         }
+        // 문제가 없다면 login 메소드를 이용해 세션 저장
         return req.login(user, (loginError) => {
             if (loginError){
                 return next(loginError);
@@ -71,7 +79,7 @@ router.post('/local/signup', isNotLoggedIn, async (req, res, next) => {
         res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.ALREADY_ID));
         return;
     }
-
+    // bcrypt를 이용해 hash 처리한다.
     const hash = await bcrypt.hash(password, 12);
     const signupResult = await models.User.create({email: email, name: name, password: hash});
     // insert 실패한 경우
