@@ -1,19 +1,24 @@
 module.exports = (sequelize, DataTypes) => {
     const Like = sequelize.define(
-        "Like", // 테이블 이름
+        "Like",
         {
-            // 스키마 정의
+            // 좋아요 idx
             likeIdx: {
-                // column 이름
-                type: DataTypes.INTEGER(11), // 데이터 타입 설정
-                allowNull: false, // null 허용 안함
-                primaryKey: true, // 기본키
-                autoIncrement: true // 자동 증가
+                // 데이터 타입 설정
+                type: DataTypes.INTEGER(11), 
+                // null 허용 안함
+                allowNull: false, 
+                // 기본키
+                primaryKey: true, 
+                // 자동 증가
+                autoIncrement: true 
             },
+            // 사용자 idx
             userIdx: {
                 type: DataTypes.INTEGER(11),
                 allowNull: false
             },
+            // 게시글 idx
             boardIdx: {
                 type: DataTypes.INTEGER(11),
                 allowNull: false

@@ -30,7 +30,7 @@ app.use(expressSession({
   secret : process.env.SECRET,
   resave: false,
   saveUninitialized: true,
-  cookie: {secure: true}
+  cookie: {secure: false}
 }));
 app.use(flash());
 app.use(passport.initialize()); // passport 구동

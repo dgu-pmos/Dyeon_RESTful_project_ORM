@@ -1,31 +1,39 @@
 module.exports = (sequelize, DataTypes) => {
     const User = sequelize.define(
-        "User", // 테이블 이름
+        "User",
         {
-            // 스키마 정의
+            // 사용자 idx
             userIdx: {
-                // column 이름
-                type: DataTypes.INTEGER(11), // 데이터 타입 설정
-                allowNull: false, // null 허용 안함
-                primaryKey: true, // 기본키
-                autoIncrement: true // 자동 증가
+                // 데이터 타입 설정
+                type: DataTypes.INTEGER(11), 
+                // null 허용 안함
+                allowNull: false, 
+                // 기본키
+                primaryKey: true, 
+                // 자동 증가
+                autoIncrement: true 
             },
+            // 이메일
             email: {
                 type: DataTypes.STRING(45),
                 allowNull: false
             },
+            // 이름
             name: {
                 type: DataTypes.STRING(45),
                 allowNull: false
             },
+            // 비밀번호(미사용)
             password: {
                 type: DataTypes.STRING(45),
                 allowNull: false
             },
+            // 카톡 내 id
             snsId: {
                 type: DataTypes.STRING(100),
                 allowNull: true
             },
+            // 제공사
             provider: {
                 type: DataTypes.STRING(45),
                 allowNull: true
@@ -39,6 +47,5 @@ module.exports = (sequelize, DataTypes) => {
         User.hasMany(models.Likes, {onDelete: 'cascade', onUpdate: 'cascade'});
     };
 */
-
     return User;
 };

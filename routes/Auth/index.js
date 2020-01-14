@@ -25,6 +25,12 @@ router.get('/local/signin', (req, res) => {
     res.render('login');
 })
 
+router.get('/local/signout', isLoggedIn, (req, res) => {
+    req.logout();
+    req.session.destroy();
+    res.redirect('/');
+});
+
 router.post('/local/signin', isNotLoggedIn, (req, res, next) => {
     passport.authenticate('local', (authError, user, info) => {
         if(authError){

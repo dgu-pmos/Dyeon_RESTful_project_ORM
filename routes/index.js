@@ -6,6 +6,10 @@ var router = express.Router({
 router.use('/auth', require('./Auth'));
 router.use('/boards', require('./Boards'));
 
+router.get('/', (req, res) => {
+    res.render('index');
+});
+
 router.get('/success', (req, res) => {
     res.send('success');
 });
