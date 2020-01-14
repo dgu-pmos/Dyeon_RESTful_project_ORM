@@ -4,6 +4,11 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var indexRouter = require('./routes/index');
+const expressSession = require('express-session');
+const passport = require('passport');
+const passportConfig = require('./module/passport/index');
+const flash = require('connect-flash');
+require('dotenv').config();
 
 var app = express();
 
@@ -16,6 +21,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+passportConfig(passport);
+
+// app.js에서 설정 관련 코드는 app.use route 위에다가 배치
+app.use(expressSession({
+  maxAge: 1000 * 60 * 60,
+  secret : process.env.SECRET,
+  resave: false,
+  saveUninitialized: true,
+  cookie: {secure: true}
+}));
+app.use(flash());
+app.use(passport.initialize()); // passport 구동
+app.use(passport.session()); // 세션 연결
 
 app.use('/', indexRouter);
 

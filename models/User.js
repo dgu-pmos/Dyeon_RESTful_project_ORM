@@ -21,7 +21,15 @@ module.exports = (sequelize, DataTypes) => {
             password: {
                 type: DataTypes.STRING(45),
                 allowNull: false
-            }
+            },
+            snsId: {
+                type: DataTypes.STRING(100),
+                allowNull: true
+            },
+            provider: {
+                type: DataTypes.STRING(45),
+                allowNull: true
+            },
         }, {}
     );
 /*
@@ -30,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
         User.hasMany(models.Comment, {onDelete: 'cascade', onUpdate: 'cascade'});
         User.hasMany(models.Likes, {onDelete: 'cascade', onUpdate: 'cascade'});
     };
-    */
+*/
 
     return User;
 };
