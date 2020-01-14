@@ -10,7 +10,8 @@ const responseMessage = require('../../../module/utils/responseMessage');
 // 응답 코드 모음 모듈
 const statusCode = require('../../../module/utils/statusCode');
 
-const Likes = require('../../../model/Likes');
+const models = require('../../../models');
+const sequelize = require('sequelize');
 
 // 좋아요 생성 라우트
 router.post('/', authUtil.validToken, async (req, res) => {
@@ -24,17 +25,20 @@ router.post('/', authUtil.validToken, async (req, res) => {
         return;
     }
 
-    const json = {userIdx, boardIdx};
     // 이미 좋아요 했는지 검사
-    const checkIdx = await Likes.check(json);
+    const checkIdx = await models.Like.findOne({ where: {
+        userIdx : userIdx,
+        boardIdx : boardIdx
+    }});
+
     // 이미 했다면
-    if(checkIdx.length != 0){
+    if(checkIdx!=null){
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.LIKE_ALREADY));
         return;
     }
 
     // 좋아요 생성 함수 호출
-    const result = await Likes.create(json);
+    const result = await models.Like.create({userIdx: userIdx, boardIdx: boardIdx});
     // 실패했다면
     if(!result){
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.LIKE_CREATE_FAIL));
@@ -54,7 +58,13 @@ router.get('/', async (req, res) => {
         return;
     }
     // 좋아요 조회 함수 호출
-    const result = await Likes.read(boardIdx);
+    const result = await models.Like.findAll({
+        attributes: [[sequelize.fn('COUNT', sequelize.col('boardIdx')), 'likeNum']],
+        where : {
+            boardIdx : boardIdx
+        }
+    });
+
     // 실패했다면
     if(!result){
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.LIKE_READ_FAIL));
@@ -76,12 +86,16 @@ router.delete('/', authUtil.validToken, async (req, res) => {
         return;
     }
 
-    const json = {userIdx, boardIdx};
     // 좋아요 삭제 함수 호출
-    const result = await Likes.remove(json);
+    const result = await models.Like.destroy({
+        where: {
+        userIdx : userIdx,
+        boardIdx : boardIdx
+        }
+    });
     
     // 삭제된 row 가 없다면
-    if(!result || result.affectedRows == '0'){
+    if(!result){
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.LIKE_DELETE_FAIL));
         return;
     }    

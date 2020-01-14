@@ -1,6 +1,5 @@
 var express = require('express');
 var router = express.Router({mergeParams: true});
-
 // jwt token을 검증하기 위한 미들웨어
 const authUtil = require('../../../module/utils/authUtil');
 // 성공, 실패 메세지 포맷 설정 모듈
@@ -9,11 +8,11 @@ const utils = require('../../../module/utils/utils');
 const responseMessage = require('../../../module/utils/responseMessage');
 // 응답 코드 모음 모듈
 const statusCode = require('../../../module/utils/statusCode');
-
-const Comment = require('../../../model/Comment');
+const models = require('../../../models');
 
 // 댓글 생성 라우트
 router.post('/', authUtil.validToken, async (req, res) => {
+    const conditions = {};
     const userIdx = req.decoded.userIdx;
     const {content, ref_comment} = req.body;
     const boardIdx = Number(req.params.boardIdx);
@@ -24,10 +23,14 @@ router.post('/', authUtil.validToken, async (req, res) => {
         res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.X_NULL_VALUE(missParameters)));
         return;
     }
+    if (boardIdx) conditions.boardIdx = boardIdx;
+    if (userIdx) conditions.userIdx = userIdx;
+    if (content) conditions.content = content;
+    if (ref_comment!==undefined) conditions.ref_comment = ref_comment;
 
-    const json = {boardIdx, userIdx, content, ref_comment};
     // 댓글 생성 함수 호출
-    const result = await Comment.create(json);
+    const result = await models.Comment.create(conditions);
+
     // 실패했다면
     if(!result){
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.COMMENT_CREATE_FAIL));
@@ -39,7 +42,7 @@ router.post('/', authUtil.validToken, async (req, res) => {
 });
 
 // 댓글 수정 라우트
-router.put('/:commentIdx', async (req, res) => {
+router.put('/:commentIdx', authUtil.validToken, async (req, res) => {
     const userIdx = req.decoded.userIdx;
     const content = req.body.content;
     const commentIdx = Number(req.params.commentIdx);
@@ -50,13 +53,18 @@ router.put('/:commentIdx', async (req, res) => {
         res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.X_NULL_VALUE(missParameters)));
         return;
     }
-
-    const json = {commentIdx, userIdx, content};
     // 댓글 수정 함수 호출
-    const result = await Comment.update(json);
+    const result = await models.Comment.update(
+    {
+        content : content
+    },
+        { where: {
+            userIdx : userIdx,
+            commentIdx : commentIdx
+    }});
 
     // 수정된 row 가 없다면
-    if(!result || result.affectedRows == '0'){
+    if(!result){
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.COMMENT_UPDATE_FAIL));
         return;
     }
@@ -75,7 +83,12 @@ router.get('/', async (req, res) => {
     }
 
     // 댓글 조회 함수 호출
-    const result = await Comment.read(boardIdx);
+    const result = await models.Comment.findAll({
+        where: {
+            boardIdx : boardIdx
+        }
+    }
+);
     // 실패했다면
     if(!result){
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.COMMENT_READ_FAIL));
@@ -96,13 +109,15 @@ router.delete('/:commentIdx', authUtil.validToken, async (req, res) => {
         res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.X_NULL_VALUE(missParameters)));
         return;
     }
-
-    const json = {userIdx, commentIdx};
     // 댓글 삭제 함수 호출
-    const result = await Comment.remove(json);
-    
+    let result = await models.Comment.findOne({
+        where: {
+            commentIdx : commentIdx
+        }
+    });
+
     // 삭제된 row 가 없다면
-    if(!result || result.affectedRows == '0'){
+    if(!result){
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.COMMENT_DELETE_FAIL));
         return;
     }    

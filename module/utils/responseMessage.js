@@ -13,7 +13,6 @@ module.exports = {
 
     DB_ERROR:"데이터베이스 오류",
     
-
     BOARD_CREATE_SUCCESS: "게시글 작성 성공",
     BOARD_CREATE_FAIL: "게시글 작성 실패",
     BOARD_READ_ALL_SUCCESS: "게시글 전체 조회 성공",

@@ -1,12 +1,10 @@
 var express = require('express');
 var router =  express.Router({mergeParams: true});
-
 const utils = require('../../module/utils/utils');
 const statusCode = require('../../module/utils/statusCode');
 const responseMessage = require('../../module/utils/responseMessage');
-
-const User = require('../../model/User');
 const jwt = require('../../module/utils/jwt');
+const models = require('../../models');
 
 // 로그인 라우트
 router.post('/', async(req, res) => {
@@ -21,23 +19,30 @@ router.post('/', async(req, res) => {
         res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.X_NULL_VALUE(missParameters)));
     }
     // 존재하는 계정인지 확인한다.
-    const selectResult = await User.checkUser(email);
+    const selectResult = await models.User.findOne({ where: {
+        email : email
+    }});
+
     // DB 에러
-    if(!selectResult){
+    if(selectResult===undefined){
         res.status(statusCode.DB_ERROR).send(utils.successFalse(responseMessage.DB_ERROR));
     }
     // 유저가 없을 때
-    if(selectResult.length == 0){
+    if(selectResult===null){
         res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.X_NULL_VALUE("해당("+email+")")));
     }
     // 유저가 있을 때
     else{
         // 패스워드가 일치하지 않는다면 에러 메세지 출력
-        const passwordChecking = await User.checkPassword(email, password);
-        if(passwordChecking.length == 0){
+        const passwordChecking = await models.User.findOne({ where: {
+            email : email,
+            password : password
+        }});
+
+        if(passwordChecking===null){
             res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.MISS_MATCH_PW)); 
         }else{
-            const token = await jwt.sign(selectResult[0]);
+            const token = await jwt.sign(selectResult);
             res.status(statusCode.OK).send(utils.successTrue(responseMessage.SUCCESS_USER_SIGNIN, token));    
         }
     }    

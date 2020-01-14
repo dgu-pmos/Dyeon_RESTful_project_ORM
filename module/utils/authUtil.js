@@ -11,7 +11,7 @@ const authMiddleware = {
         const token = req.headers.token;
         // token이 없다면 false
         if(!token) {
-            return res.json(utils.successFalse(statusCode.BAD_REQUEST, responseMessage.EMPTY_TOKEN));
+            return res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.EMPTY_TOKEN));
         } else {
             // token을 verify 하고 return 값을 user에 담는다.
             const user = jwt.verify(token);            
