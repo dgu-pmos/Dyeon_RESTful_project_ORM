@@ -4,6 +4,7 @@ module.exports = {
     OUT_OF_VALUE: "파라미터 값이 잘못 되었습니다.",
     SIGN_UP_SUCCESS: "회원가입 성공",
     SIGN_UP_FAIL: "회원 가입 실패",
+    NEED_SIGN_IN: "로그인 필요",
     SIGN_IN_SUCCESS: "로그인 성공",
     SIGN_IN_FAIL: "로그인 실패",
     ALREADY_ID: "존재하는 ID 입니다.",

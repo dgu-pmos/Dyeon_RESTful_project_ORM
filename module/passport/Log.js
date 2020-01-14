@@ -6,7 +6,7 @@ exports.isLoggedIn = (req, res, next) => {
     if (req.isAuthenticated()){
         next();
     }else{
-        res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.SIGN_IN_FAIL));
+        res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.NEED_SIGN_IN));
     }
 };
 
@@ -14,6 +14,6 @@ exports.isNotLoggedIn = (req, res, next) => {
     if (!req.isAuthenticated()) {
         next();
     }else{
-        res.redirect('/boards');
+        res.redirect('/success');
     }
 };

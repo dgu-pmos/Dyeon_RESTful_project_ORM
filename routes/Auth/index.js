@@ -12,23 +12,33 @@ router.get('/kakao', (req, res) => {
     res.render('kakao');
 })
 
+// passport.authenticate를 이용해 kakaoStrategy를 호출한다.
 router.get('/kakao/signin', isNotLoggedIn, passport.authenticate('kakao-login'));
 
+// 카카오 로그인을 끝내고 처리하는 콜백함수 라우트
 router.get('/kakao/signin/callback', isNotLoggedIn, passport.authenticate('kakao-login', {
     successRedirect: '/success',
     failureRedirect: '/fail'
 }));
 
+router.get('/local/signin', (req, res) => {
+    res.render('login');
+})
+
 router.post('/local/signin', isNotLoggedIn, (req, res, next) => {
     passport.authenticate('local', (authError, user, info) => {
         if(authError){
-            console.error(authError);
             return next(authError);
         }
         if(!user){
-            return res.send('loginError');
+            return res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.SIGN_IN_FAIL));
         }
-        return res.send(user);
+        return req.login(user, (loginError) => {
+            if (loginError){
+                return next(loginError);
+            }
+            return res.redirect('/success');
+        });
     })(req, res, next);
 });
 
