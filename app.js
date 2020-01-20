@@ -4,11 +4,18 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var indexRouter = require('./routes/index');
+
 const expressSession = require('express-session');
 const passport = require('passport');
 const passportConfig = require('./module/passport/index');
-const flash = require('connect-flash');
+
+const models = require('./models');
+
 require('dotenv').config();
+
+const cors = require('cors');
+
+const methodOverride = require('method-override');
 
 var app = express();
 
@@ -22,6 +29,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(methodOverride('_method'));
+
+let corsOptions = {
+  origin: 'http://localhost:4000',
+  credentials: true
+}
+
+app.use(cors(corsOptions));
+
 passportConfig(passport);
 
 // app.js에서 설정 관련 코드는 app.use route 위에다가 배치
@@ -32,9 +48,19 @@ app.use(expressSession({
   saveUninitialized: true,
   cookie: {secure: false}
 }));
-app.use(flash());
 app.use(passport.initialize()); // passport 구동
 app.use(passport.session()); // 세션 연결
+
+models.sequelize.sync()
+  .then(() => {
+    console.log('✓ DB connection success.');
+    console.log('  Press CTRL-C to stop\n');
+  })
+  .catch(err => {
+    console.error(err);
+    console.log('✗ DB connection error. Please make sure DB is running.');
+    process.exit();
+  });
 
 app.use('/', indexRouter);
 

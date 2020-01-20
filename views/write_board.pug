@@ -1,0 +1,8 @@
+doctype html
+head
+    title board
+    link(rel='stylesheet', href='/stylesheets/style.css')
+form(method='POST' action='/boards')
+    input(type='text', placeholder='제목을 입력하세요' name='title')
+    input(type='textarea', placeholder='이메일을 입력하세요' name='content')
+    button.btn.btn-primary(type='submit') 글 등록

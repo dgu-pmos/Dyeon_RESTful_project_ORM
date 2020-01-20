@@ -1,0 +1,9 @@
+doctype html
+head
+    title signup
+    link(rel='stylesheet', href='/stylesheets/style.css')
+form(method='POST' action='/auth/local/signup')
+    input(type='text', placeholder='이름을 입력하세요' name='name')
+    input(type='text', placeholder='이메일을 입력하세요' name='email')
+    input(type='password', placeholder='비밀번호를 입력하세요' name='password')
+    button.btn.btn-primary(type='submit') 회원가입

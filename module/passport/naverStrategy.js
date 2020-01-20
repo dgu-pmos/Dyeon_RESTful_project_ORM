@@ -1,25 +1,28 @@
-const KakaoStrategy = require('passport-kakao').Strategy;
+const NaverStrategy = require('passport-naver').Strategy;
 const models = require('../../models');
 require('dotenv').config();
 
+/* 이메일 전달해주지 않는 오류 발생!! */
+
 module.exports = async (passport) => {
     passport.use(
-        // kakao strategy는 kakao-login이라는 이름으로 정한다.
-        'kakao-login',
         // strategy 생성
-        new KakaoStrategy({
-            // kakao 로부터 받은 APP KEY
-            clientID: process.env.KAKAO_ID,
+        new NaverStrategy({
+            // 네이버로부터 받은 APP KEY
+            clientID: process.env.NAVER_ID,
+            clientSecret: process.env.NAVER_SECRET,
             // strategy가 끝난 후 callback url
-            callbackURL: '/auth/kakao/signin/callback',
-            // 여기서 카카오톡으로부터 profile을 받고, done으로 다음 함수에 넘긴다.
+            callbackURL: '/auth/naver/signin/callback',
+            svcType: 0,
+            authType: 'reauthenticate'
+            // 여기서 네이버로부터 profile을 받고, done으로 다음 함수에 넘긴다.
         }, async (accessToken, refreshToken, profile, done) => {
             try {
                 // profile의 id를 이용해 계정이 존재하는지 확인한다.
                 const exUser = await models.User.findOne({
                     where: {
                         snsId: profile.id,
-                        provider: 'kakao'
+                        provider: 'naver'
                     }
                 });
                 if (exUser) {
@@ -29,12 +32,13 @@ module.exports = async (passport) => {
                 } else {
                     // 존재하지 않으면, 계정을 생성하고 새 계정 정보를
                     // passport/index.js(serializeUser)에 반환한다.
+                    console.log(profile);
                     const newUser = await models.User.create({
-                        email: profile._json.kakao_account.email,
-                        password: profile.id,
-                        name: profile._json.properties.nickname,
-                        snsId: profile.id,
-                        provider: 'kakao'
+                        email : profile._json.email,
+                        password: profile._json.id,
+                        name: profile._json.name,
+                        snsId: profile._json.id,
+                        provider: 'naver'
                     });
                     done(null, newUser);
                 }

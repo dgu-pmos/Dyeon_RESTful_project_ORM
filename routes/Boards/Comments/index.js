@@ -9,48 +9,37 @@ const responseMessage = require('../../../module/utils/responseMessage');
 // 응답 코드 모음 모듈
 const statusCode = require('../../../module/utils/statusCode');
 const models = require('../../../models');
+const sequelize = require('sequelize');
+const { isLoggedIn, isNotLoggedIn } = require('../../../module/passport/Log');
 
-// 댓글 전체 조회 라우트
 router.get('/', isLoggedIn, async (req, res) => {
-    const boardIdx = Number(req.params.boardIdx);
-    // miss parameter가 있는지 검사한다.
-    if(!boardIdx){
-        res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.X_NULL_VALUE('boardIdx')));
-        return;
-    }
+    res.render('write_comment', {boardIdx : JSON.stringify(req.params.boardIdx)});
+});
 
-    // 댓글 조회 함수 호출
-    const result = await models.Comment.findAll({
-        where: {
-            boardIdx : boardIdx
-        }
-    }
-);
-    // 실패했다면
-    if(!result){
-        res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.COMMENT_READ_FAIL));
-        return;
-    }
+router.get('/:commentIdx/edit', isLoggedIn, async (req, res) => {
+    res.render('edit_comment', {boardIdx : JSON.stringify(req.params.boardIdx), commentIdx : JSON.stringify(req.params.commentIdx)});
+});
 
-    res.status(statusCode.OK).send(utils.successTrue(responseMessage.COMMENT_READ_SUCCESS, result));
-    return;
+router.get('/:boardIdx/edit', isLoggedIn, async (req, res) => {
+    res.render('edit_board', {boardIdx: req.params.boardIdx});
 });
 
 // 댓글 생성 라우트
 router.post('/', isLoggedIn, async (req, res) => {
     const conditions = {};
-    const userIdx = req.user;
+    const { userIdx, name } = req.user;
     const {content, ref_comment} = req.body;
     const boardIdx = Number(req.params.boardIdx);
     // miss parameter가 있는지 검사한다.
-    if(!boardIdx || !userIdx || !content){
-        const missParameters = Object.entries({boardIdx, userIdx, content})
+    if(!boardIdx || !userIdx || !name || !content){
+        const missParameters = Object.entries({boardIdx, userIdx, name, content})
         .filter(it => it[1] == undefined).map(it => it[0]).join(',');
         res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.X_NULL_VALUE(missParameters)));
         return;
     }
     if (boardIdx) conditions.boardIdx = boardIdx;
     if (userIdx) conditions.userIdx = userIdx;
+    if (name) conditions.name = name;
     if (content) conditions.content = content;
     if (ref_comment!==undefined) conditions.ref_comment = ref_comment;
 
@@ -62,19 +51,20 @@ router.post('/', isLoggedIn, async (req, res) => {
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.COMMENT_CREATE_FAIL));
         return;
     }
-
-    res.status(statusCode.OK).send(utils.successTrue(responseMessage.COMMENT_CREATE_SUCCESS, result));
+    res.redirect('/boards/'+boardIdx);
+    // res.status(statusCode.OK).send(utils.successTrue(responseMessage.COMMENT_CREATE_SUCCESS, result));
     return;
 });
 
 // 댓글 수정 라우트
 router.put('/:commentIdx', isLoggedIn, async (req, res) => {
-    const userIdx = req.user;
+    const userIdx = req.user.userIdx;
+    const boardIdx = Number(req.params.boardIdx);
     const content = req.body.content;
     const commentIdx = Number(req.params.commentIdx);
     // miss parameter가 있는지 검사한다.
-    if(!userIdx || !commentIdx || !content){
-        const missParameters = Object.entries({userIdx, commentIdx, content})
+    if(!userIdx || !boardIdx || !commentIdx || !content){
+        const missParameters = Object.entries({userIdx, boardIdx, commentIdx, content})
         .filter(it => it[1] == undefined).map(it => it[0]).join(',');
         res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.X_NULL_VALUE(missParameters)));
         return;
@@ -94,23 +84,24 @@ router.put('/:commentIdx', isLoggedIn, async (req, res) => {
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.COMMENT_UPDATE_FAIL));
         return;
     }
-    
-    res.status(statusCode.OK).send(utils.successTrue(responseMessage.COMMENT_UPDATE_SUCCESS, result));
+    res.redirect('/boards/'+boardIdx);
+    // res.status(statusCode.OK).send(utils.successTrue(responseMessage.COMMENT_UPDATE_SUCCESS, result));
     return;
 });
 
 // 댓글 삭제 라우트
 router.delete('/:commentIdx', isLoggedIn, async (req, res) => {
-    const userIdx = req.user;
+    const userIdx = req.user.userIdx;
+    const boardIdx = Number(req.params.boardIdx);
     const commentIdx = Number(req.params.commentIdx);
     // miss parameter가 있는지 검사한다.
-    if(!commentIdx || !userIdx){
-        const missParameters = Object.entries({userIdx, commentIdx})
+    if(!commentIdx || !boardIdx || !userIdx){
+        const missParameters = Object.entries({userIdx, boardIdx, commentIdx})
         res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.X_NULL_VALUE(missParameters)));
         return;
     }
     // 댓글 삭제 함수 호출
-    let result = await models.Comment.findOne({
+    let result = await models.Comment.destroy({
         where: {
             commentIdx : commentIdx
         }
@@ -120,9 +111,10 @@ router.delete('/:commentIdx', isLoggedIn, async (req, res) => {
     if(!result){
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.COMMENT_DELETE_FAIL));
         return;
-    }    
-
-    res.status(statusCode.OK).send(utils.successTrue(responseMessage.COMMENT_DELETE_SUCCESS, result));
+    }  
+    
+    res.redirect('/boards/'+boardIdx);
+    // res.status(statusCode.OK).send(utils.successTrue(responseMessage.COMMENT_DELETE_SUCCESS, result));
     return;
 });
 

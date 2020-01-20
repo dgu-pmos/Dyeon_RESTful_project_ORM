@@ -1,0 +1,12 @@
+doctype html
+head
+    title edit board
+    link(rel='stylesheet', href='/stylesheets/style.css')
+body#body
+    script(type='text/javascript').
+        let board_string = "";
+        board_string += "<form action='/boards/"+!{boardIdx}+"?_method=PUT' method='post'>"
+        +"<input type='text', placeholder='제목을 입력하세요' name='title'/>"
+        +"<input type='textarea', placeholder='댓글을 입력하세요' name='content'/>"
+        +"<input type='submit' value='글 수정' name='submit'/></form>"
+        body.innerHTML += board_string;

@@ -1,0 +1,34 @@
+doctype html
+head
+    title board
+    link(rel='stylesheet', href='/stylesheets/style.css')
+body#body
+    h1 read board
+    a(href='/boards') 글쓰기
+    table(border='1')
+        thead
+        tr
+            th 번호
+            th 작성자
+            th 제목
+            th 생성일
+        tr
+        tbody#tbody
+            script(type='text/javascript').
+                var x = !{result};
+                for( var i = 0 ; i < x.length ; i++)
+                    tbody.innerHTML += "<th>"+x[i].boardIdx+"</th>"
+                        +"<th>"+x[i].name+"</th>"
+                        +"<th><a href='/boards/"+x[i].boardIdx+"'>"+x[i].title+"</a></th>"
+                        +"<th>"+x[i].createdAt+ "</th>"
+    script(type='text/javascript').
+        var page_string = "";
+        if(!{page} > 1)
+            page_string += "<a href='/boards/pages/"+String(!{page}-1)+"'>이전</a>"
+        page_string += "<p>"+!{page}+"</p>"
+        if(!{page} < !{maxPage})
+            page_string += "<a href='/boards/pages/"+String(!{page}+1)+"'>다음<a>"
+        body.innerHTML += page_string
+
+
+

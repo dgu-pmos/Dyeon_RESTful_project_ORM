@@ -5,6 +5,7 @@ module.exports = {
     SIGN_UP_SUCCESS: "회원가입 성공",
     SIGN_UP_FAIL: "회원 가입 실패",
     NEED_SIGN_IN: "로그인 필요",
+    ALREADY_SIGN_IN: "이미 로그인 했습니다",
     SIGN_IN_SUCCESS: "로그인 성공",
     SIGN_IN_FAIL: "로그인 실패",
     ALREADY_ID: "존재하는 ID 입니다.",
@@ -12,8 +13,8 @@ module.exports = {
     MISS_MATCH_PW: "비밀번호가 일치하지 않습니다",
     EMPTY_TOKEN: "토큰이 없습니다",
 
-    DB_ERROR:"데이터베이스 오류",
-    
+    DB_ERROR: "데이터베이스 오류",
+
     BOARD_CREATE_SUCCESS: "게시글 작성 성공",
     BOARD_CREATE_FAIL: "게시글 작성 실패",
     BOARD_READ_ALL_SUCCESS: "게시글 전체 조회 성공",
@@ -67,7 +68,7 @@ module.exports = {
     X_UPDATE_SUCCESS: (x) => `${x} 수정 성공`,
     X_UPDATE_FAIL: (x) => `${x} 수정 실패`,
     X_DELETE_SUCCESS: (x) => `${x} 삭제 성공`,
-    X_DELETE_FAIL: (x) => `${x} 삭제 실패`,  
+    X_DELETE_FAIL: (x) => `${x} 삭제 실패`,
     NO_X: (x) => `존재하는 ${x} 입니다.`,
     ALREADY_X: (x) => `존재하는 ${x} 입니다.`,
 }

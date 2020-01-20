@@ -10,12 +10,4 @@ router.get('/', (req, res) => {
     res.render('index');
 });
 
-router.get('/success', (req, res) => {
-    res.send('success');
-});
-
-router.get('/fail', (req, res) => {
-    res.send('fail');
-});
-
 module.exports = router;

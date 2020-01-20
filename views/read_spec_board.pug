@@ -1,0 +1,48 @@
+doctype html
+head
+    title board
+    link(rel='stylesheet', href='/stylesheets/style.css')
+body#body
+    script(type='text/javascript').
+        let result = !{result};
+        let likes = !{likes};
+
+        var board_string = "";
+        var comment_string = "";
+
+        board_string += "<h1>"+result.title+"</h1>"+"<h2>"+result.name+" "+result.createdAt+"</h2>"+"<p>"+result.content+"</p>"
+                        +"<br></br><h5>total likes : "+likes+"</h5>"
+        if(!{checkLike} == 0) {
+            board_string += "<form action='/boards/"+result.boardIdx+"/likes' method='post'>"
+                            +"<input type='submit' value='like' name='submit'/></form>"
+        } else {
+            board_string += "<form action='/boards/"+result.boardIdx+"/likes?_method=DELETE' method='post'>"
+                            +"<input type='submit' value='cancel' name='submit'/></form>"
+        }
+        if(result.userIdx == !{userIdx})
+        {
+            board_string += "<form action='/boards/"+result.boardIdx+"/edit' method='get'>"
+                            +"<input type='submit' value='글 수정' name='submit'/></form>"
+                            +"<form action='/boards/"+result.boardIdx+"?_method=DELETE' method='post'>"
+                            +"<input type='submit' value='글 삭제' name='submit'/></form>"
+        }
+        board_string += "<form action='/boards/"+result.boardIdx+"/comments' method='get'>"
+                        +"<input type='submit' value='write comment' name='submit'/></form>"
+        body.innerHTML += board_string;
+
+        for( var i = 0 ; i < result.Comments.length ; i++)
+        {
+            if(result.Comments[i].commentIdx == result.Comments[i].ref_comment){
+                comment_string += result.Comments[i].content+" "+result.Comments[i].name+" "+result.Comments[i].createdAt;
+            }else{
+                comment_string += "&nbsp; &nbsp; &nbsp; &nbsp; => "+result.Comments[i].content+" "+result.Comments[i].name+" "+result.Comments[i].createdAt;
+            }
+            if(result.userIdx == !{userIdx})
+            {
+                comment_string += "<form action='/boards/"+result.boardIdx+"/comments/"+result.Comments[i].commentIdx+"/edit' method='get'>"
+                                +"<input type='submit' value='댓글 수정' name='submit'/></form>"
+                                +"<form action='/boards/"+result.boardIdx+"/comments/"+result.Comments[i].commentIdx+"?_method=DELETE' method='post'>"
+                                +"<input type='submit' value='댓글 삭제' name='submit'/></form>"
+            }
+        }
+        body.innerHTML += comment_string;

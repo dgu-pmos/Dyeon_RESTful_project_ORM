@@ -1,4 +1,15 @@
+doctype html
 form#frm_login(action='/auth/local/signin', method='post')
-    input(type='text', name='email')
-    input(type='password', name='password')
+    input(type='text', name='email', placeholder='ID를 입력하세요')
+    input(type='password', name='password', placeholder='PW를 입력하세요')
     input(type='submit', value='Login')
+br
+a(href="http://localhost:3000/auth/google/signin") 구글 계정
+br
+a(href="http://localhost:3000/auth/facebook/signin") 페이스북 계정
+br
+a(href="http://localhost:3000/auth/kakao/signin") 카카오 계정
+br
+a(href="http://localhost:3000/auth/signout") 로그아웃
+br
+a(href="http://localhost:3000/auth/local/signup") 회원가입

@@ -12,54 +12,17 @@ const statusCode = require('../../../module/utils/statusCode');
 
 const models = require('../../../models');
 const sequelize = require('sequelize');
-
-// 좋아요 조회 라우트
-router.get('/', isLoggedIn, async (req, res) => {
-    const boardIdx = Number(req.params.boardIdx);
-    // miss parameter가 있는지 검사한다.
-    if(!boardIdx){
-        res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.X_NULL_VALUE('boardIdx')));
-        return;
-    }
-    // 좋아요 조회 함수 호출
-    const result = await models.Like.findAll({
-        attributes: [[sequelize.fn('COUNT', sequelize.col('boardIdx')), 'likeNum']],
-        where : {
-            boardIdx : boardIdx
-        }
-    });
-
-    // 실패했다면
-    if(!result){
-        res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.LIKE_READ_FAIL));
-        return;
-    }
-
-    res.status(statusCode.OK).send(utils.successTrue(responseMessage.LIKE_READ_SUCCESS, result));
-    return;
-});
+const { isLoggedIn, isNotLoggedIn } = require('../../../module/passport/Log');
 
 // 좋아요 생성 라우트
 router.post('/', isLoggedIn, async (req, res) => {
-    const userIdx = req.user;
+    const userIdx = req.user.userIdx;
     const boardIdx = Number(req.params.boardIdx);
     // miss parameter가 있는지 검사한다.
     if(!boardIdx || !userIdx){
         const missParameters = Object.entries({boardIdx, userIdx})
         .filter(it => it[1] == undefined).map(it => it[0]).join(',');
         res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.X_NULL_VALUE(missParameters)));
-        return;
-    }
-
-    // 이미 좋아요 했는지 검사
-    const checkIdx = await models.Like.findOne({ where: {
-        userIdx : userIdx,
-        boardIdx : boardIdx
-    }});
-
-    // 이미 했다면
-    if(checkIdx!=null){
-        res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.LIKE_ALREADY));
         return;
     }
 
@@ -70,14 +33,14 @@ router.post('/', isLoggedIn, async (req, res) => {
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.LIKE_CREATE_FAIL));
         return;
     }
-
-    res.status(statusCode.OK).send(utils.successTrue(responseMessage.LIKE_CREATE_SUCCESS, result));
+    res.redirect('/boards/'+boardIdx);
+    // res.status(statusCode.OK).send(utils.successTrue(responseMessage.LIKE_CREATE_SUCCESS, result));
     return;
 });
 
 // 좋아요 삭제 라우트
 router.delete('/', isLoggedIn, async (req, res) => {
-    const userIdx = req.user;
+    const userIdx = req.user.userIdx;
     const boardIdx = Number(req.params.boardIdx);
     // miss parameter가 있는지 검사한다.
     if(!boardIdx || !userIdx){
@@ -98,9 +61,9 @@ router.delete('/', isLoggedIn, async (req, res) => {
     if(!result){
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.LIKE_DELETE_FAIL));
         return;
-    }    
-
-    res.status(statusCode.OK).send(utils.successTrue(responseMessage.LIKE_DELETE_SUCCESS, result));
+    }
+    res.redirect('/boards/'+boardIdx);
+    // res.status(statusCode.OK).send(utils.successTrue(responseMessage.LIKE_DELETE_SUCCESS, result));
     return;
 });
 
