@@ -12,16 +12,22 @@ const models = require('../../../models');
 const sequelize = require('sequelize');
 const { isLoggedIn, isNotLoggedIn } = require('../../../module/passport/Log');
 
+var moment = require('moment');
+require('moment-timezone');
+moment.tz.setDefault("Asia/Seoul");
+
+/*
 router.get('/', isLoggedIn, async (req, res) => {
     res.render('write_comment', {boardIdx : JSON.stringify(req.params.boardIdx)});
+});
+*/
+
+router.get('/:ref_comment', isLoggedIn, async (req, res) => {
+    res.render('write_comment', {boardIdx : JSON.stringify(req.params.boardIdx), ref_comment: JSON.stringify(req.params.ref_comment)});
 });
 
 router.get('/:commentIdx/edit', isLoggedIn, async (req, res) => {
     res.render('edit_comment', {boardIdx : JSON.stringify(req.params.boardIdx), commentIdx : JSON.stringify(req.params.commentIdx)});
-});
-
-router.get('/:boardIdx/edit', isLoggedIn, async (req, res) => {
-    res.render('edit_board', {boardIdx: req.params.boardIdx});
 });
 
 // 댓글 생성 라우트
@@ -37,14 +43,31 @@ router.post('/', isLoggedIn, async (req, res) => {
         res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.X_NULL_VALUE(missParameters)));
         return;
     }
+
     if (boardIdx) conditions.boardIdx = boardIdx;
     if (userIdx) conditions.userIdx = userIdx;
     if (name) conditions.name = name;
     if (content) conditions.content = content;
-    if (ref_comment!==undefined) conditions.ref_comment = ref_comment;
+    if (ref_comment !== 'self') conditions.ref_comment = ref_comment;
+    conditions.createdAt = moment().format("YYYY-MM-DD HH:mm:ss");
+    conditions.updatedAt = moment().format("YYYY-MM-DD HH:mm:ss");
 
     // 댓글 생성 함수 호출
     const result = await models.Comment.create(conditions);
+
+    if (ref_comment == 'self')
+    {  
+        await models.Comment.update(
+            {
+                ref_comment : result.commentIdx
+            },
+            {
+                where: {
+                    commentIdx : result.commentIdx
+                }
+            }
+        );
+    }
 
     // 실패했다면
     if(!result){
@@ -72,7 +95,8 @@ router.put('/:commentIdx', isLoggedIn, async (req, res) => {
     // 댓글 수정 함수 호출
     const result = await models.Comment.update(
     {
-        content : content
+        content : content,
+        updatedAt : moment().format("YYYY-MM-DD HH:mm:ss"),
     },
         { where: {
             userIdx : userIdx,

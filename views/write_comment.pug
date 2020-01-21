@@ -5,8 +5,10 @@ head
 body#body
     script(type='text/javascript').
         let boardIdx = !{boardIdx};
+        let ref_comment = !{ref_comment};
         let comment_string = "";
         comment_string += "<form action='/boards/"+boardIdx+"/comments' method='post'>"
-        +"<input type='textarea', placeholder='댓글을 입력하세요' name='content'/>"
+        +"<input type='textarea' placeholder='댓글을 입력하세요' name='content'/>"
+        +"<input type='hidden' id='ref' name='ref_comment' value='"+ref_comment+"'/>"
         +"<input type='submit' value='write comment' name='submit'/></form>"
         body.innerHTML += comment_string;

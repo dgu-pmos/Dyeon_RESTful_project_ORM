@@ -28,6 +28,14 @@ module.exports = (sequelize, DataTypes) => {
             ref_comment: {
                 type: DataTypes.INTEGER(11),
                 allowNull: true
+            },
+            createdAt: {
+                type: DataTypes.DATE(),
+                allowNull: false
+            },
+            updatedAt: {
+                type: DataTypes.DATE(),
+                allowNull: false
             }
         }, {}
     );

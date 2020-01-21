@@ -14,6 +14,10 @@ const models = require('../../../models');
 const sequelize = require('sequelize');
 const { isLoggedIn, isNotLoggedIn } = require('../../../module/passport/Log');
 
+var moment = require('moment');
+require('moment-timezone');
+moment.tz.setDefault("Asia/Seoul");
+
 // 좋아요 생성 라우트
 router.post('/', isLoggedIn, async (req, res) => {
     const userIdx = req.user.userIdx;
@@ -27,7 +31,12 @@ router.post('/', isLoggedIn, async (req, res) => {
     }
 
     // 좋아요 생성 함수 호출
-    const result = await models.Like.create({userIdx: userIdx, boardIdx: boardIdx});
+    const result = await models.Like.create({
+        userIdx: userIdx, 
+        boardIdx: boardIdx, 
+        createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+        updatedAt: moment().format("YYYY-MM-DD HH:mm:ss")
+    });
     // 실패했다면
     if(!result){
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.LIKE_CREATE_FAIL));

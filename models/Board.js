@@ -33,6 +33,15 @@ module.exports = (sequelize, DataTypes) => {
             // 글 공개, 비공개 flag
             active: {
                 type: DataTypes.INTEGER(11),
+                allowNull: false,
+                defaultValue: 1
+            },
+            createdAt: {
+                type: DataTypes.DATE(),
+                allowNull: false
+            },
+            updatedAt: {
+                type: DataTypes.DATE(),
                 allowNull: false
             }
         }, {}

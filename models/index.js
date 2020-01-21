@@ -10,7 +10,11 @@ const config = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   dialect: "mysql", // Sequelize는 문법에 독립적이다. dialect(방언)에서 설정만 해주면 다양한 SQL 문법을 자유롭게 변역할 수 있다.
-  operatorsAliases: false // Sequelize는 연산자에 대하여 별칭을 부여할 수 있게 해줍니다.
+  operatorsAliases: false, // Sequelize는 연산자에 대하여 별칭을 부여할 수 있게 해줍니다.
+  timezone: '+09:00',
+  define: {
+    timestamps: false
+  }
 };
 const db = {};
 const sequelize = new Sequelize(config.database, config.username, config.password, config);

@@ -1,5 +1,8 @@
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const models = require('../../models');
+var moment = require('moment');
+require('moment-timezone');
+moment.tz.setDefault("Asia/Seoul");
 require('dotenv').config();
 
 module.exports = async (passport) => {
@@ -34,6 +37,8 @@ module.exports = async (passport) => {
                         password: profile.id,
                         name: profile._json.name,
                         snsId: profile.id,
+                        createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+                        updatedAt: moment().format("YYYY-MM-DD HH:mm:ss"),
                         provider: 'google'
                     });
                     done(null, newUser);

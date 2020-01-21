@@ -17,6 +17,10 @@ const {
     isNotLoggedIn
 } = require('../../module/passport/Log');
 
+var moment = require('moment');
+require('moment-timezone');
+moment.tz.setDefault("Asia/Seoul");
+
 // comments로 넘겨주는 라우트
 router.use('/:boardIdx/comments', require('./Comments'));
 // likes로 넘겨주는 라우트
@@ -104,8 +108,6 @@ router.get('/:boardIdx', isLoggedIn, async (req, res) => {
             [models.Comment, 'commentIdx', 'ASC']
         ]
     });
-
-
     const likes = await models.Like.findAll({
         attributes: [[sequelize.fn('COUNT', sequelize.col('boardIdx')), 'likeNum']],
         where : {
@@ -141,7 +143,6 @@ router.post('/', isLoggedIn, async (req, res) => {
         title,
         content
     } = req.body;
-    const active = 1;
     // miss parameter가 있는지 검사한다.
     if (!userIdx || !title || !content || !name) {
         const missParameters = Object.entries({
@@ -160,7 +161,8 @@ router.post('/', isLoggedIn, async (req, res) => {
         name: name,
         title: title,
         content: content,
-        active: active
+        createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+        updatedAt: moment().format("YYYY-MM-DD HH:mm:ss")
     });
 
     // 생성 실패했을 때
@@ -197,6 +199,7 @@ router.put('/:boardIdx', isLoggedIn, async (req, res) => {
     if (title) conditions.title = title;
     if (content) conditions.content = content;
     if (active !== undefined) conditions.active = active;
+    conditions.updatedAt = moment().format("YYYY-MM-DD HH:mm:ss");
     // 게시글 수정 함수 호출
 
     const result = await models.Board.update(conditions, {

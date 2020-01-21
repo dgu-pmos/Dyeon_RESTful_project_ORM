@@ -11,6 +11,14 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 // 자동 증가
                 autoIncrement: true
+            },
+            createdAt: {
+                type: DataTypes.DATE(),
+                allowNull: false
+            },
+            updatedAt: {
+                type: DataTypes.DATE(),
+                allowNull: false
             }
         }, {}
     );

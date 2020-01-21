@@ -13,6 +13,10 @@ const {
 const passport = require('passport');
 const bcrypt = require('bcrypt');
 
+var moment = require('moment');
+require('moment-timezone');
+moment.tz.setDefault("Asia/Seoul");
+
 // 로그아웃 route
 router.get('/signout', isLoggedIn, (req, res) => {
     req.logout();
@@ -145,6 +149,8 @@ router.post('/local/signup', isNotLoggedIn, async (req, res, next) => {
         email: email,
         name: name,
         password: hash,
+        createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
+        updatedAt: moment().format("YYYY-MM-DD HH:mm:ss"),
         provider: 'local'
     });
     // insert 실패한 경우
