@@ -21,17 +21,7 @@ moment.tz.setDefault("Asia/Seoul");
 router.get('/signout', isLoggedIn, (req, res) => {
     req.logout();
     req.session.destroy();
-    res.redirect('/auth/signin');
-});
-
-// 로그인 form을 보여주기 위한 route
-router.get('/signin', (req, res) => {
-    res.render('login');
-});
-
-// 로그인 form을 보여주기 위한 route
-router.get('/local/signup', (req, res) => {
-    res.render('signup');
+    res.status(statusCode.OK).send(utils.successTrue(responseMessage.SIGN_OUT_SUCCESS));
 });
 
 // passport.authenticate 메소드를 이용해 kakaoStrategy를 호출한다.
@@ -40,10 +30,9 @@ router.get('/kakao/signin', isNotLoggedIn, passport.authenticate('kakao-login'))
 
 // 카카오 로그인을 끝내고 처리하는 콜백함수
 // 세션이 존재하지 않는 상태인지 isNotLoggedIn으로 확인한다.
-router.get('/kakao/signin/callback', isNotLoggedIn, passport.authenticate('kakao-login', {
-    successRedirect: '/boards/pages/1',
-    failureRedirect: '/auth/signin'
-}));
+router.get('/kakao/signin/callback', isNotLoggedIn, passport.authenticate('kakao-login'), (req, res) => {
+    res.status(statusCode.OK).send(utils.successTrue(responseMessage.SIGN_IN_SUCCESS));
+});
 
 // passport.authenticate 메소드를 이용해 facebookStrategy를 호출한다.
 // 세션이 존재하지 않는 상태인지 isNotLoggedIn으로 확인한다.
@@ -57,10 +46,9 @@ router.get('/facebook/signin', isNotLoggedIn, passport.authenticate('facebook', 
 
 // 카카오 로그인을 끝내고 처리하는 콜백함수
 // 세션이 존재하지 않는 상태인지 isNotLoggedIn으로 확인한다.
-router.get('/facebook/signin/callback', isNotLoggedIn, passport.authenticate('facebook', {
-    successRedirect: '/boards/pages/1',
-    failureRedirect: '/auth/signin'
-}));
+router.get('/facebook/signin/callback', isNotLoggedIn, passport.authenticate('facebook'), (req, res) => {
+    res.status(statusCode.OK).send(utils.successTrue(responseMessage.SIGN_IN_SUCCESS));
+});
 
 // passport.authenticate 메소드를 이용해 facebookStrategy를 호출한다.
 // 세션이 존재하지 않는 상태인지 isNotLoggedIn으로 확인한다.
@@ -68,10 +56,9 @@ router.get('/naver/signin', isNotLoggedIn, passport.authenticate('naver'));
 
 // 카카오 로그인을 끝내고 처리하는 콜백함수
 // 세션이 존재하지 않는 상태인지 isNotLoggedIn으로 확인한다.
-router.get('/naver/signin/callback', isNotLoggedIn, passport.authenticate('naver', {
-    successRedirect: '/boards/pages/1',
-    failureRedirect: '/auth/signin'
-}));
+router.get('/naver/signin/callback', isNotLoggedIn, passport.authenticate('naver'), (req, res) => {
+    res.status(statusCode.OK).send(utils.successTrue(responseMessage.SIGN_IN_SUCCESS));
+});
 
 // passport.authenticate 메소드를 이용해 facebookStrategy를 호출한다.
 // 세션이 존재하지 않는 상태인지 isNotLoggedIn으로 확인한다.
@@ -81,10 +68,9 @@ router.get('/google/signin', isNotLoggedIn, passport.authenticate('google', {
 
 // 카카오 로그인을 끝내고 처리하는 콜백함수
 // 세션이 존재하지 않는 상태인지 isNotLoggedIn으로 확인한다.
-router.get('/google/signin/callback', isNotLoggedIn, passport.authenticate('google', {
-    successRedirect: '/boards/pages/1',
-    failureRedirect: '/auth/signin'
-}));
+router.get('/google/signin/callback', isNotLoggedIn, passport.authenticate('google'), (req, res) => {
+    res.status(statusCode.OK).send(utils.successTrue(responseMessage.SIGN_IN_SUCCESS));
+});
 
 // local login route
 router.post('/local/signin', isNotLoggedIn, (req, res, next) => {
@@ -95,16 +81,14 @@ router.post('/local/signin', isNotLoggedIn, (req, res, next) => {
             return next(authError);
         }
         if (!user) {
-            res.redirect('/auth/signin');
+            res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.NO_USER));
         }
         // 문제가 없다면 login 메소드를 이용해 세션 저장
         return req.login(user, (loginError) => {
             if (loginError) {
                 return next(loginError);
             }
-            // return res.redirect('/success');
-            // return res.status(statusCode.OK).send(utils.successTrue(responseMessage.SIGN_IN_SUCCESS, user));
-            res.redirect('/boards/pages/1');
+            res.status(statusCode.OK).send(utils.successTrue(responseMessage.SIGN_IN_SUCCESS));
         });
     })(req, res, next);
 });
@@ -158,8 +142,7 @@ router.post('/local/signup', isNotLoggedIn, async (req, res, next) => {
         res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.SIGN_UP_FAIL));
         return;
     } else {
-        res.redirect('/auth/signin');
-        // res.status(statusCode.OK).send(utils.successTrue(responseMessage.SIGN_UP_SUCCESS, signupResult));
+        res.status(statusCode.OK).send(utils.successTrue(responseMessage.SIGN_UP_SUCCESS));
         return;
     }
 });

@@ -1,8 +1,6 @@
 var express = require('express');
 var router = express.Router({mergeParams: true});
 
-// jwt token을 검증하기 위한 미들웨어
-const authUtil = require('../../../module/utils/authUtil');
 // 성공, 실패 메세지 포맷 설정 모듈
 const utils = require('../../../module/utils/utils');
 // 응답 메세지 모음 모듈
@@ -11,8 +9,7 @@ const responseMessage = require('../../../module/utils/responseMessage');
 const statusCode = require('../../../module/utils/statusCode');
 
 const models = require('../../../models');
-const sequelize = require('sequelize');
-const { isLoggedIn, isNotLoggedIn } = require('../../../module/passport/Log');
+const { isLoggedIn } = require('../../../module/passport/Log');
 
 var moment = require('moment');
 require('moment-timezone');
@@ -42,8 +39,8 @@ router.post('/', isLoggedIn, async (req, res) => {
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.LIKE_CREATE_FAIL));
         return;
     }
-    res.redirect('/boards/'+boardIdx);
-    // res.status(statusCode.OK).send(utils.successTrue(responseMessage.LIKE_CREATE_SUCCESS, result));
+
+    res.status(statusCode.OK).send(utils.successTrue(responseMessage.LIKE_CREATE_SUCCESS, result));
     return;
 });
 
@@ -71,8 +68,8 @@ router.delete('/', isLoggedIn, async (req, res) => {
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.LIKE_DELETE_FAIL));
         return;
     }
-    res.redirect('/boards/'+boardIdx);
-    // res.status(statusCode.OK).send(utils.successTrue(responseMessage.LIKE_DELETE_SUCCESS, result));
+
+    res.status(statusCode.OK).send(utils.successTrue(responseMessage.LIKE_DELETE_SUCCESS, result));
     return;
 });
 

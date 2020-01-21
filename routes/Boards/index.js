@@ -2,8 +2,6 @@ var express = require('express');
 var router = express.Router({
     mergeParams: true
 });
-// jwt token을 검증하기 위한 미들웨어
-// const authUtil = require('../../module/utils/authUtil');
 // 성공, 실패 메세지 포맷 설정 모듈
 const utils = require('../../module/utils/utils');
 // 응답 메세지 모음 모듈
@@ -12,10 +10,7 @@ const responseMessage = require('../../module/utils/responseMessage');
 const statusCode = require('../../module/utils/statusCode');
 const models = require('../../models');
 const sequelize = require('sequelize');
-const {
-    isLoggedIn,
-    isNotLoggedIn
-} = require('../../module/passport/Log');
+const { isLoggedIn } = require('../../module/passport/Log');
 
 var moment = require('moment');
 require('moment-timezone');
@@ -25,14 +20,6 @@ moment.tz.setDefault("Asia/Seoul");
 router.use('/:boardIdx/comments', require('./Comments'));
 // likes로 넘겨주는 라우트
 router.use('/:boardIdx/likes', require('./Likes'));
-
-router.get('/', isLoggedIn, async (req, res) => {
-    res.render('write_board');
-});
-
-router.get('/:boardIdx/edit', isLoggedIn, async (req, res) => {
-    res.render('edit_board', {boardIdx: req.params.boardIdx});
-});
 
 // 게시글 전체 조회 라우트
 router.get('/pages/:page', isLoggedIn, async (req, res) => {
@@ -73,17 +60,14 @@ router.get('/pages/:page', isLoggedIn, async (req, res) => {
         return;
     }
 
-    res.render('read_board', { result: JSON.stringify(result), maxPage: Math.ceil(maxPage[0].dataValues.cnt / 3), page: req.params.page });
-    return;
-    /*
-    // 첫번째 쿼리 결과 값에 maxPage를 push한다.
+    // 결과 값에 현재 page와 maxPage를 push한다.
     result.push({
-        maxPage: Math.ceil(maxPage[0].dataValues.cnt / 3)
+        maxPage: Math.ceil(maxPage[0].dataValues.cnt / 3),
+        page: req.params.page
     });
 
-    //res.status(statusCode.OK).send(utils.successTrue(responseMessage.BOARD_READ_ALL_SUCCESS, result));
-    */
-
+    res.status(statusCode.OK).send(utils.successTrue(responseMessage.BOARD_READ_ALL_SUCCESS, result));
+    return;
 });
 
 // 상세 게시글 조회 라우트
@@ -108,12 +92,14 @@ router.get('/:boardIdx', isLoggedIn, async (req, res) => {
             [models.Comment, 'commentIdx', 'ASC']
         ]
     });
+    // like 수를 count 하는 query
     const likes = await models.Like.findAll({
         attributes: [[sequelize.fn('COUNT', sequelize.col('boardIdx')), 'likeNum']],
         where : {
             boardIdx : boardIdx
         }
     });
+    // like 했는지 check 하는 query 
     let checkLike = await models.Like.findOne({ where: {
         userIdx : userIdx,
         boardIdx : boardIdx
@@ -123,14 +109,21 @@ router.get('/:boardIdx', isLoggedIn, async (req, res) => {
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.BOARD_READ_FAIL));
         return;
     }
+    // check 결과 query 값이 null이라면 0, 있다면 1
     if(checkLike == null)
     {
         checkLike = 0;
     } else {
         checkLike = 1;
     }
-    res.render('read_spec_board', {userIdx: userIdx, result: JSON.stringify(result[0]), likes: likes[0].dataValues.likeNum, checkLike: checkLike});
-    // res.status(statusCode.OK).send(utils.successTrue(responseMessage.BOARD_READ_SUCCESS, result));
+    // 결과 값에 userIdx, like 수, like flag를 push 한다.
+    result.push({
+        userIdx: userIdx,
+        likes: likes[0].dataValues.likeNum,
+        checkLike: checkLike
+    });
+
+    res.status(statusCode.OK).send(utils.successTrue(responseMessage.BOARD_READ_SUCCESS, result));
     return;
 });
 
@@ -170,8 +163,8 @@ router.post('/', isLoggedIn, async (req, res) => {
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.BOARD_CREATE_FAIL));
         return;
     }
-    res.redirect('/boards/pages/1');
-    // res.status(statusCode.OK).send(utils.successTrue(responseMessage.BOARD_CREATE_SUCCESS, result));
+
+    res.status(statusCode.OK).send(utils.successTrue(responseMessage.BOARD_CREATE_SUCCESS, result));
     return;
 });
 
@@ -214,8 +207,8 @@ router.put('/:boardIdx', isLoggedIn, async (req, res) => {
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.BOARD_UPDATE_FAIL));
         return;
     }
-    res.redirect('/boards/'+boardIdx);
-    // res.status(statusCode.OK).send(utils.successTrue(responseMessage.BOARD_UPDATE_SUCCESS, result));
+
+    res.status(statusCode.OK).send(utils.successTrue(responseMessage.BOARD_UPDATE_SUCCESS, result));
     return;
 });
 
@@ -245,8 +238,8 @@ router.delete('/:boardIdx', isLoggedIn, async (req, res) => {
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.BOARD_DELETE_FAIL));
         return;
     }
-    res.redirect('/boards/pages/1');
-    // res.status(statusCode.OK).send(utils.successTrue(responseMessage.BOARD_DELETE_SUCCESS, result));
+
+    res.status(statusCode.OK).send(utils.successTrue(responseMessage.BOARD_DELETE_SUCCESS, result));
     return;
 });
 

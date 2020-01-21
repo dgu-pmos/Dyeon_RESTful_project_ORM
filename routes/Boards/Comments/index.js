@@ -8,30 +8,17 @@ const utils = require('../../../module/utils/utils');
 const responseMessage = require('../../../module/utils/responseMessage');
 // 응답 코드 모음 모듈
 const statusCode = require('../../../module/utils/statusCode');
+
 const models = require('../../../models');
-const sequelize = require('sequelize');
-const { isLoggedIn, isNotLoggedIn } = require('../../../module/passport/Log');
+const { isLoggedIn } = require('../../../module/passport/Log');
 
 var moment = require('moment');
 require('moment-timezone');
 moment.tz.setDefault("Asia/Seoul");
 
-/*
-router.get('/', isLoggedIn, async (req, res) => {
-    res.render('write_comment', {boardIdx : JSON.stringify(req.params.boardIdx)});
-});
-*/
-
-router.get('/:ref_comment', isLoggedIn, async (req, res) => {
-    res.render('write_comment', {boardIdx : JSON.stringify(req.params.boardIdx), ref_comment: JSON.stringify(req.params.ref_comment)});
-});
-
-router.get('/:commentIdx/edit', isLoggedIn, async (req, res) => {
-    res.render('edit_comment', {boardIdx : JSON.stringify(req.params.boardIdx), commentIdx : JSON.stringify(req.params.commentIdx)});
-});
-
 // 댓글 생성 라우트
 router.post('/', isLoggedIn, async (req, res) => {
+    // 댓글 수정할 값을 담을 빈 객체
     const conditions = {};
     const { userIdx, name } = req.user;
     const {content, ref_comment} = req.body;
@@ -48,24 +35,18 @@ router.post('/', isLoggedIn, async (req, res) => {
     if (userIdx) conditions.userIdx = userIdx;
     if (name) conditions.name = name;
     if (content) conditions.content = content;
+    // 만약 ref_comment가 'self'가 아니라면 참조할 부모가 있다는 것을 의미 
     if (ref_comment !== 'self') conditions.ref_comment = ref_comment;
     conditions.createdAt = moment().format("YYYY-MM-DD HH:mm:ss");
     conditions.updatedAt = moment().format("YYYY-MM-DD HH:mm:ss");
 
     // 댓글 생성 함수 호출
     const result = await models.Comment.create(conditions);
-
-    if (ref_comment == 'self')
-    {  
-        await models.Comment.update(
-            {
-                ref_comment : result.commentIdx
-            },
-            {
-                where: {
-                    commentIdx : result.commentIdx
-                }
-            }
+    // 만약 'self' 라면 자기 idx를 ref_comment에 넣는다.
+    if (ref_comment == 'self') {  
+        await models.Comment.update (
+            { ref_comment : result.commentIdx },
+            { where: { commentIdx : result.commentIdx } }
         );
     }
 
@@ -74,8 +55,8 @@ router.post('/', isLoggedIn, async (req, res) => {
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.COMMENT_CREATE_FAIL));
         return;
     }
-    res.redirect('/boards/'+boardIdx);
-    // res.status(statusCode.OK).send(utils.successTrue(responseMessage.COMMENT_CREATE_SUCCESS, result));
+    
+    res.status(statusCode.OK).send(utils.successTrue(responseMessage.COMMENT_CREATE_SUCCESS, result));
     return;
 });
 
@@ -108,8 +89,8 @@ router.put('/:commentIdx', isLoggedIn, async (req, res) => {
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.COMMENT_UPDATE_FAIL));
         return;
     }
-    res.redirect('/boards/'+boardIdx);
-    // res.status(statusCode.OK).send(utils.successTrue(responseMessage.COMMENT_UPDATE_SUCCESS, result));
+
+    res.status(statusCode.OK).send(utils.successTrue(responseMessage.COMMENT_UPDATE_SUCCESS, result));
     return;
 });
 
@@ -136,9 +117,8 @@ router.delete('/:commentIdx', isLoggedIn, async (req, res) => {
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.COMMENT_DELETE_FAIL));
         return;
     }  
-    
-    res.redirect('/boards/'+boardIdx);
-    // res.status(statusCode.OK).send(utils.successTrue(responseMessage.COMMENT_DELETE_SUCCESS, result));
+
+    res.status(statusCode.OK).send(utils.successTrue(responseMessage.COMMENT_DELETE_SUCCESS, result));
     return;
 });
 
