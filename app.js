@@ -32,7 +32,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(methodOverride('_method'));
 
 let corsOptions = {
-  origin: 'http://localhost:4000',
+  origin: '*',
   credentials: true
 }
 
