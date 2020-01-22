@@ -1,21 +1,23 @@
 var express = require('express');
-var router = express.Router({
-    mergeParams: true
-});
+var router = express.Router({ mergeParams: true });
+// 성공, 실패 메세지 포맷 설정 모듈
 const utils = require('../../module/utils/utils');
-const statusCode = require('../../module/utils/statusCode');
+// 응답 메세지 모음 모듈
 const responseMessage = require('../../module/utils/responseMessage');
+// 응답 코드 모음 모듈
+const statusCode = require('../../module/utils/statusCode');
+// miss parameter 탐색 모듈
+const missParameter = require('../../module/utils/missParameter');
+// sequelize scheme 모듈
 const models = require('../../models');
-const {
-    isLoggedIn,
-    isNotLoggedIn
-} = require('../../module/passport/Log');
+// 로그인, 로그아웃 상태 검증 미들웨어
+const { isLoggedIn, isNotLoggedIn } = require('../../module/passport/Log');
+// 패스포트 모듈
 const passport = require('passport');
+// 해시 암호화 모듈
 const bcrypt = require('bcrypt');
-
-var moment = require('moment');
-require('moment-timezone');
-moment.tz.setDefault("Asia/Seoul");
+// 시간 객체를 생성하는 모듈
+var moment = require('moment'); require('moment-timezone'); moment.tz.setDefault("Asia/Seoul");
 
 // 로그아웃 route
 router.get('/signout', isLoggedIn, (req, res) => {
@@ -47,16 +49,6 @@ router.get('/facebook/signin', isNotLoggedIn, passport.authenticate('facebook', 
 // 카카오 로그인을 끝내고 처리하는 콜백함수
 // 세션이 존재하지 않는 상태인지 isNotLoggedIn으로 확인한다.
 router.get('/facebook/signin/callback', isNotLoggedIn, passport.authenticate('facebook'), (req, res) => {
-    res.status(statusCode.OK).send(utils.successTrue(responseMessage.SIGN_IN_SUCCESS));
-});
-
-// passport.authenticate 메소드를 이용해 facebookStrategy를 호출한다.
-// 세션이 존재하지 않는 상태인지 isNotLoggedIn으로 확인한다.
-router.get('/naver/signin', isNotLoggedIn, passport.authenticate('naver'));
-
-// 카카오 로그인을 끝내고 처리하는 콜백함수
-// 세션이 존재하지 않는 상태인지 isNotLoggedIn으로 확인한다.
-router.get('/naver/signin/callback', isNotLoggedIn, passport.authenticate('naver'), (req, res) => {
     res.status(statusCode.OK).send(utils.successTrue(responseMessage.SIGN_IN_SUCCESS));
 });
 
@@ -95,43 +87,33 @@ router.post('/local/signin', isNotLoggedIn, (req, res, next) => {
 
 // 회원가입 라우트
 router.post('/local/signup', isNotLoggedIn, async (req, res, next) => {
-    const {
-        email,
-        password,
-        name
-    } = req.body;
-    if (!email || !password || !name) {
-        const missParameters = Object.entries({
-                email,
-                password,
-                name
-            })
-            .filter(it => it[1] == undefined).map(it => it[0]).join(',');
-        res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.X_NULL_VALUE(missParameters)));
-        return;
+    let json = {};
+    // request body로부터 게시글 입력 정보들을 받는다.
+    json.email = req.body.email;
+    json.name = req.body.name;
+    json.password = req.body.password;
+    // miss parameter가 있는지 검사한다.
+    const missParam = missParameter(json);
+    if(missParam) {
+        res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.X_NULL_VALUE(missParam)));
     }
     // 존재하는 계정인지 확인한다.
     const CheckUser = await models.User.findOne({
         where: {
-            email: email,
+            email: json.email,
             provider: 'local'
         }
     });
-    // DB 오류
-    if (CheckUser === undefined) {
-        res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(responseMessage.DB_ERROR));
-        return;
-    }
     // 유저가 있는 경우
     if (CheckUser != null) {
         res.status(statusCode.BAD_REQUEST).send(utils.successFalse(responseMessage.ALREADY_ID));
         return;
     }
     // bcrypt를 이용해 hash 처리한다.
-    const hash = await bcrypt.hash(password, 12);
+    const hash = await bcrypt.hash(json.password, 12);
     const signupResult = await models.User.create({
-        email: email,
-        name: name,
+        email: json.email,
+        name: json.name,
         password: hash,
         createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
         updatedAt: moment().format("YYYY-MM-DD HH:mm:ss"),
